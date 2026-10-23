@@ -7,6 +7,8 @@ Per docs/RSI-PROGRAM.md: every run on this model starts from the latest verified
 **Per-domain drift floors (anti-lobotomy circuit breaker; research amendment 2026-10-22 — per-domain, NOT one aggregate, so no domain can collapse behind a green average):** <values — MUST be set before this lineage's first real run executes; never renegotiated after a bad result. Example form: "candidate may not fall below parent on any frozen domain (instruction / reasoning / coding / tool use / conversation / safety), and no domain may sit more than <X> points below base v0.">
 **Max chain length:** <N versions — at N, a refresh review is forced: fresh challenger or re-base onto the best current base, with a plasticity probe (probe-chunk loss from chain head vs from base) recorded here.>
 **Candidate counts (search denominator):** selection set consulted per version: <n>; confirmation set touched only at: <milestones/face-offs, with dates>.
+**Potential band (Duckets, 2026-10-22):** estimated ceiling for this base on the primary metrics — <band, with sources: teacher scores on our evals / published best-known / external anchor>. Set at chain start, revised at milestones. **Headroom** (band top − current) reported each version.
+**Saturation state:** <ACTIVE | SATURATED (date, trigger, evidence)>. Gains-per-kept-version series is the primary saturation evidence; see the version table below.
 
 | Version | Date | Parent | Dataset version + chunk | Steps | Eval vs parent | Frozen suite vs parent | Frozen suite vs base v0 | Cumulative drift | LM Studio name | Status |
 |---|---|---|---|---|---|---|---|---|---|---|
