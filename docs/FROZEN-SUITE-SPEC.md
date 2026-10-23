@@ -10,12 +10,14 @@ Versions train on top of versions. A candidate can beat its parent on the target
 
 Five categories, each a set of prompt → expected-behavior cases in chat JSONL (same row shape as the training corpora, so existing tooling can stage it):
 
-1. **Instruction following** — format constraints, multi-part instructions, refusals-that-shouldn't-happen and refusals-that-should.
+1. **Instruction following** — format constraints, multi-part instructions.
 2. **Reasoning** — short logic/math word problems with known answers.
 3. **Coding** — small functions/fixes with verifiable outputs.
 4. **Tool use** — function-calling shapes: correct tool, correct arguments, no invented tools.
 5. **Conversation** — coherence, context retention over a few turns, tone stability.
-6. **Failure cases** — the failure ledger's eval distillation (grows by APPEND only; see below).
+6. **Safety / refusal** (research amendment, 2026-10-22) — ~100–200 pinned prompts: requests the base refuses that it should (refusal must survive fine-tuning — benign SFT alone erodes it, and LoRA can strip refusals while capability suites pass) AND benign look-alikes it must NOT refuse (over-refusal is also a regression). Its own per-domain floor.
+7. **Per-chunk probes** (research amendment) — a small probe set per trained chunk of each chain, so chunk-level forgetting (chunk k erasing chunk 1) is measured by name.
+8. **Failure cases** — the failure ledger's eval distillation (grows by APPEND only; see below).
 
 Size guidance: 30–60 cases per category is enough for a stable signal at this scale; quality of cases beats volume. Every case needs an unambiguous scoring rule: exact/verifiable answer, checklist rubric, or pairwise-vs-parent judgment by a frozen teacher model (see Scoring).
 
@@ -28,11 +30,14 @@ Size guidance: 30–60 cases per category is enough for a stable signal at this 
 ## Scoring
 
 - Deterministic where possible: verifiable answers scored by script; rubric cases scored by a **frozen teacher/judge model** (27–35B tier) with the identical prompt set and rubric every time; pairwise checks compare candidate vs parent answers blind.
+- **Judge protocol** (research amendment): the judge model + prompt version are pinned in the suite manifest; pairwise items are run in BOTH orders and only consistent wins count; a 50–100-item calibration set reviewed by the owner is re-run whenever the judge changes.
+- **Drift signals beyond scores** (research amendment): every scoring run also records held-out general-text perplexity, output-length distribution, distinct-n, and refusal rate for base/parent/candidate — tails move before means do.
+- **All scoring runs through the production serving configuration** (the quantized serving artifact, production template/system prompt/sampling) — the gate judges the artifact that ships, never the training artifact.
 - Record per-category scores + overall for: **base v0, parent, candidate** — all three, every run, in the model's lineage ledger (see `templates/lineage-ledger-template.md`).
 - A purpose-built scorer tool does NOT exist yet (audit finding M1). Until it does, scoring is driver-performed with the judge model and the numbers recorded by hand — acceptable for v1, called out honestly in reports.
 
 ## Baselines & the drift line
 
 - Before a lineage's first real run: score the base model on the suite; record as the v0 baseline. Score the current version whenever the suite version changes.
-- Each lineage ledger carries a **cumulative drift line** (set before its first run): e.g. "no category below parent; cumulative overall drift vs base ≤ X points." Crossing it stops the chain — next run restarts from base or last known-good.
+- Each lineage ledger carries **per-domain cumulative drift floors** (set before its first run — research amendment: a single aggregate line lets one domain collapse behind a green average): e.g. "no domain more than X points below base; no domain below parent at all." Crossing any floor stops the chain — next run restarts from base or last known-good.
 - "Clear regression" working definition until stricter numbers are set: a category score drop vs parent larger than the suite's run-to-run variance on the parent itself (measure by scoring the parent twice at suite build time). Record that variance in the suite manifest.

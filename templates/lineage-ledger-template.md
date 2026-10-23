@@ -4,7 +4,9 @@ Per docs/RSI-PROGRAM.md: every run on this model starts from the latest verified
 
 **Chain naming:** main/agent chains use `<model>-rsi-v<n>`; the operator track uses its own `<model>-op-v<n>` chain and its own ledger file (`lineage-<model>-operator.md`) — never mix chains.
 
-**Cumulative drift line (anti-lobotomy circuit breaker):** <value — MUST be set before this lineage's first real run executes; never renegotiated after a bad result. Example form: "candidate may not fall below parent on any frozen category, and cumulative frozen-suite drift vs base may not exceed <X> points overall.">
+**Per-domain drift floors (anti-lobotomy circuit breaker; research amendment 2026-10-22 — per-domain, NOT one aggregate, so no domain can collapse behind a green average):** <values — MUST be set before this lineage's first real run executes; never renegotiated after a bad result. Example form: "candidate may not fall below parent on any frozen domain (instruction / reasoning / coding / tool use / conversation / safety), and no domain may sit more than <X> points below base v0.">
+**Max chain length:** <N versions — at N, a refresh review is forced: fresh challenger or re-base onto the best current base, with a plasticity probe (probe-chunk loss from chain head vs from base) recorded here.>
+**Candidate counts (search denominator):** selection set consulted per version: <n>; confirmation set touched only at: <milestones/face-offs, with dates>.
 
 | Version | Date | Parent | Dataset version + chunk | Steps | Eval vs parent | Frozen suite vs parent | Frozen suite vs base v0 | Cumulative drift | LM Studio name | Status |
 |---|---|---|---|---|---|---|---|---|---|---|
