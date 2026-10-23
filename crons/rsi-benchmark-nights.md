@@ -12,14 +12,24 @@ schedule:
 delivery:
   - chat_id: 95cf4108-0d59-4164-a8a7-09b7590a5ce5
 metadata:
-  originating_chat_context_json: '{"chat_id":"95cf4108-0d59-4164-a8a7-09b7590a5ce5","origin_provider":"main","chat_kind":"direct","event_kind":"message","require_mention":false,"device_id":"d6f6eb7d-6ab4-4985-9c41-0e8bd8e7d184"}'
+  originating_chat_context_json: '{"chat_id":"95cf4108-0d59-4164-a8a7-09b7590a5ce5","origin_provider":"main","chat_kind":"direct","event_kind":"message","require_mention":false,"device_id":"2a15202c-9bb7-99e3-3c8b-94e3d6805b66"}'
   presentation_locale: en-US
 ---
 RSI NON-TRAINING NIGHT — BENCHMARKS + PREPARATION (Duckets, 2026-10-22: "if it's not a training night you need to work on preparation while I'm asleep — make sure you're fully prepared for each training session day"). Program law: ~/workspace/goals/rsi-overnight-small-model-training-program/files/RSI-PROGRAM.md (Benchmarks + Preparation nights sections). This job NEVER trains anything. Two mandates, in priority order: (A) the next training day is made fully ready; (B) benchmarks get recorded. Backlog prep fills whatever window remains.
 
+NIGHT-ONLY RULE (Duckets, 2026-10-23 18:08, after the daytime battery ate his model all day): ALL benching that loads or occupies his models happens in these night windows — between training runs, while he sleeps. NEVER in his daytime. This job is where batteries live now.
+
 STAND-DOWN RULES (check first, in order)
+0. BENCH LOCK (added 2026-10-23): if the file ~/bench/official/BENCH-IN-PROGRESS exists on the Mac, the full-battery orchestrator (run_full_battery.py) owns the machine tonight — it is recording the battery itself. Do DESK PREP ONLY (no model loads, no benchmarks, no unloads) and report briefly that the battery owns the machine.
 1. If tonight is a training or smoke night with a live/scheduled RSI training job (the Tue/Thu/Sat driver, any one-off smoke), or a training run is live on either engine — do DESK PREP ONLY (file/tool work: plans, queue updates, set construction from existing files, runner verification — NO model loads, NO benchmarks) and report briefly.
 2. Preflight for any model work: check lms ps on the Mac (via ~/bin/mac-ssh). If anything is GENERATING or a Hermes brain job is active, wait/re-check every 15 min to 03:00; still busy = defer the model work, do desk prep instead. Never unload a model a live session is using.
+
+ONE-TIME PRIORITY — the Sun 2026-10-25 run ONLY (finish the DuckBot-da7d milestone battery; Duckets CUT the daytime battery at 18:08 on 2026-10-23 — "i meant cut it" — and ordered the remainder done at night). Work these BEFORE the standing battery queue, in this order; all runners are resumable and partial results from 2026-10-23 are on disk:
+  1. IFEval: resume ifeval_gen.py for ornith-1.5-9b-duckbot-da7d (was cut mid-run at ~124+/541 — count actual rows in the results file first), then grade with ifeval_grader.py (VM bench venv).
+  2. BFCL: full bfcl_runner.py run for duckbot-da7d (v4 simple_python, prompt mode pinned).
+  3. Frozen suite judged passes (score_suite.py, suite ~/mlx-lm-lora/frozen-suite-draft/suite-draft.jsonl): load the judge (minicpm-v-4.7-35b-a3b) via lms_preflight.py --load; judged pass for duckbot-da7d → results_duckbot-da7d-judged-full.jsonl; judged pass for the BASE (ornith-1.5-9b-mlx-vision, load it too) → results_base-judged-full.jsonl; ALSO finish the candidate deterministic pass if results_duckbot-da7d-full.jsonl is short of 40 rows (it was cut ~2 min in). Unload base + judge after; restore the pre-bench loaded set exactly.
+  4. Frozen variance: ONE more judged pass on the BASE under a different output name (results_base-judged-variance.jsonl) so the freeze has parent-twice variance.
+  When all four are done, mark this section complete in your report (it does not repeat on later runs) and append the finished scores to the lineage ledger + the BASELINE record if the harvest job created it (hidden_files/benchmarks/BASELINE-ornith-1.5-9b.md) — the frozen base-vs-candidate table completes the baseline.
 
 (A) PREPARATION — the readiness standard (worked FIRST every night)
 - Goal state when the next Tue/Thu/Sat window opens: EXECUTE-ONLY. The run plan is complete (all fields, no blanks), the dataset is curated + privacy-screened + decontaminated + backed up and verified, eval/selection sets exist, check_training_config has passed on the real config, and the machine side (artifacts present, disk, throughput current) is confirmed.

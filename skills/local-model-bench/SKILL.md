@@ -31,7 +31,15 @@ the measurement machinery it (and everything else) uses.
 2. **Index** — LM Studio does NOT rescan the models folder at runtime,
    and `lms server stop/start` does not rescan. Only an APP RELAUNCH
    indexes a dropped-in folder. If `lms ls` doesn't show the model,
-   relaunch the app (it may need Duckets' hands if the machine is busy).
+   relaunch the app. **Relaunch = close + reopen through GUI computer
+   use (the Mac's desktop control), the app's proper close path —
+   NEVER kill -9 / pkill / shell-signal the LM Studio app** (Duckets'
+   correction, 2026-10-23): a hard kill is what corrupts its saved
+   settings (the network-bind and JIT settings reverting after the
+   2026-10-23 bounce were caused by Juno's kill -9, not by relaunching
+   per se). An ignored osascript quit is the signal to switch to
+   computer use, not to escalate signals; if the app still won't close
+   (busy generating), wait for quiet or let Duckets close it.
 3. **Preflight + load** — `lms_preflight.py --model <id> --load`
    (Mac `~/bench/official/`): sweeps stale `lms load` clients (they
    survive ssh disconnects and jam the queue), checks server status
@@ -86,6 +94,57 @@ sequences both models through every stage plus frozen-suite judge
 passes, writes `~/bench/official/BENCH-IN-PROGRESS` while it owns the
 machine (the RSI crons stand down for it), restores the loaded set at
 the end. Stage logs in `~/bench/official/stage-logs/`.
+
+## Bench tiers + time budget (Duckets' ruling, 2026-10-23)
+
+**SCHEDULING (Duckets, 2026-10-23 18:08): benching is a NIGHT step
+between training runs — never in his daytime.** Any battery or gate
+bench that loads or occupies his models runs inside the night windows
+(bench nights / post-training spare capacity) via the scheduled jobs.
+A daytime battery that ate his model all day was cut by his order;
+do not start one again.
+
+"we gotta leave room to actually use the model between training runs."
+The full battery is a ~20 h two-model marathon — **baseline /
+milestone tier only**: run it ONCE to establish a model's baselines,
+at challenger face-offs, every 4th kept version, or on demand, and
+schedule it as its own bench night. It is NEVER the per-run cost.
+
+**Relevance trim (Duckets, same day): "i dont think we need to run
+every single bench mark just whats relevant to us."** The milestone
+battery is now the RELEVANT set only — what his fleet actually does:
+- **frozen regression suite** (his own domains + failure cases — the
+  most relevant instrument we own)
+- **IFEval** (instruction following — the agents live on it)
+- **BFCL** (tool use — the fleet calls tools constantly)
+- **HumanEval+** (code — vibe-coding + the RSI code track)
+- **MMLU canary** (general breadth; has a published anchor)
+- **GSM8K** (basic reasoning sanity)
+- **ARC-C** (kept, Duckets 2026-10-23 ~16:11)
+- **GPQA** (kept — evidence-tier: short-leash absolutes don't mean
+  much, but the same-harness pair comparison does; see the
+  published-anchor note in the baseline record)
+- **POPE — CONDITIONAL** (Duckets, same message): vision is benched
+  ONLY when the run being judged actually trained on vision. A
+  text-trained run skips POPE entirely.
+Moved to the **on-demand shelf** (run only when a specific question
+needs them): MATH-500, MBPP+. The runners and data stay on disk; the
+shelf is a decision, not a deletion.
+
+**Gate tier (what runs after each training run)** — small on purpose,
+target ≤ ~2 h total at the measured workers-4 pace:
+- the program's selection set (~785 paired items — the actual gate)
+- the frozen regression suite (40 cases; deterministic + judged)
+- canary subsets: GSM8K 250 · ARC-C 250 · MMLU canary 342 (6/subject)
+  · MATH-500 100 · IFEval 150 · BFCL 150 · HumanEval+ 40 + MBPP+ 60
+  · POPE 100 (only when the run trained on vision)
+Canaries are smoke signals, not gate evidence — a canary dip routes to
+a bigger run on a bench night; it never discards a candidate by itself.
+
+Hard rules: benches run inside the night windows (done by 10:00) or in
+a window Duckets names; a bench never occupies the machine through his
+day. If a bench doesn't fit the window, shrink the tier — never
+stretch the day.
 
 ## Gotchas (each one bit us)
 

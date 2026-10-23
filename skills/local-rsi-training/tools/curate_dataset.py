@@ -29,15 +29,60 @@ def row_text(row):
     return str(row.get("text", ""))
 
 
+_SHAREGPT_ROLES = {"human": "user", "gpt": "assistant",
+                   "system": "system", "tool": "tool"}
+
+
+def normalize_row(row):
+    """ShareGPT rows ({"conversations": [{"from", "value"}]}) become
+    {"messages": [{"role", "content"}]} so row_text, the privacy
+    screen and the trainer all see one schema. Returns (row, converted).
+    Added 2026-10-23: the decision/code corpora are ShareGPT and were
+    silently counted 100% "empty" (17,278/17,278) without this."""
+    conv = row.get("conversations")
+    if isinstance(conv, list) and conv and "messages" not in row:
+        msgs = [{"role": _SHAREGPT_ROLES.get(str(m.get("from", "")).lower(),
+                                             str(m.get("from", "")).lower()),
+                 "content": str(m.get("value", ""))} for m in conv]
+        new = {k: v for k, v in row.items() if k != "conversations"}
+        new["messages"] = msgs
+        return new, True
+    return row, False
+
+
 def norm_key(text):
     return hashlib.sha256(
         re.sub(r"\s+", " ", text.lower()).strip().encode()).hexdigest()
 
 
-def near_key(text):
-    # crude near-dupe key: first 200 normalized chars — catches re-pastes
-    # and lightly edited copies without an embedding pass.
-    return re.sub(r"\s+", " ", text.lower()).strip()[:200]
+def _norm(text):
+    return re.sub(r"\s+", " ", str(text).lower()).strip()
+
+
+def _mid_window(norm_text, width=200):
+    # A window from the middle third: stable under light edits at the
+    # start/end, and blind to shared prefixes/suffixes (system prompts,
+    # sign-offs) that made the old first-200-chars key mass-drop fleet
+    # chat rows sharing a >=200-char instruction prefix (audit #4).
+    if len(norm_text) <= width:
+        return norm_text
+    start = (len(norm_text) - width) // 3
+    return norm_text[start:start + width]
+
+
+def near_key(row, text=None):
+    # Near-dupe key (audit #4 fix, 2026-10-23): key on the LAST message —
+    # for chat rows that is the payload (usually the assistant reply),
+    # not the shared system/user prefix. Fall back to a mid-text window
+    # of the full row when there is no usable last message.
+    msgs = row.get("messages") if isinstance(row, dict) else None
+    if isinstance(msgs, list) and msgs:
+        last = _norm(msgs[-1].get("content", ""))
+        if len(last) >= 80:
+            return hashlib.sha256(_mid_window(last).encode()).hexdigest()
+    if text is None:
+        text = row_text(row) if isinstance(row, dict) else str(row)
+    return hashlib.sha256(_mid_window(_norm(text)).encode()).hexdigest()
 
 
 # Privacy screen (PROGRAM.md rule, Duckets 2026-10-22): nothing personal gets
@@ -87,7 +132,8 @@ def main():
 
     raw_lines = Path(a.raw).read_text().splitlines()
     stats = {"input_lines": len(raw_lines), "malformed": 0, "empty": 0,
-             "too_short": 0, "exact_dupes": 0, "near_dupes": 0, "kept": 0}
+             "too_short": 0, "exact_dupes": 0, "near_dupes": 0, "kept": 0,
+             "sharegpt_normalized": 0}
     rows, seen_exact, seen_near = [], set(), set()
     for line in raw_lines:
         line = line.strip()
@@ -99,6 +145,9 @@ def main():
         except json.JSONDecodeError:
             stats["malformed"] += 1
             continue
+        row, converted = normalize_row(row)
+        if converted:
+            stats["sharegpt_normalized"] += 1
         text = row_text(row)
         if not text.strip():
             stats["empty"] += 1
@@ -106,7 +155,7 @@ def main():
         if len(text) < a.min_chars:
             stats["too_short"] += 1
             continue
-        ek, nk = norm_key(text), near_key(text)
+        ek, nk = norm_key(text), near_key(row, text)
         if ek in seen_exact:
             stats["exact_dupes"] += 1
             continue
@@ -116,6 +165,16 @@ def main():
         seen_exact.add(ek)
         seen_near.add(nk)
         rows.append(row)
+
+    # Sanity alarm (audit #4): near-dupes above a sane fraction means the
+    # key is eating real rows — the manifest must be eyeballed before use.
+    denom = stats["near_dupes"] + len(rows)
+    stats["near_dupe_frac"] = round(stats["near_dupes"] / denom, 4) if denom else 0.0
+    stats["near_dupe_alarm"] = stats["near_dupe_frac"] > 0.25
+    if stats["near_dupe_alarm"]:
+        print(f"WARNING: near_dupes are {stats['near_dupe_frac']:.0%} of "
+              "surviving rows — eyeball the manifest before training on "
+              "this dataset.", file=sys.stderr)
 
     rng = random.Random(a.seed)
     rng.shuffle(rows)
