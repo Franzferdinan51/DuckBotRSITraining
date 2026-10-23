@@ -65,9 +65,7 @@ def privacy_screen(messages):
         o = t
         for rx, ph in PRIVACY_RES:
             if ph is None:
-                o = "".join(
-                    o[:m0.start()] + "<wallet>" + o[m0.end():]
-                    for m0 in list(rx.finditer(o))) if len(rx.pattern) else o
+                # long base58 = wallet; short base58 words/code stay untouched
                 o = rx.sub(lambda mm: "<wallet>" if len(mm.group()) >= 34 else mm.group(0), o)
             else:
                 o = rx.sub(ph, o)
@@ -124,8 +122,32 @@ def main():
     n_eval = max(1, int(len(rows) * a.eval_frac)) if rows else 0
     eval_rows, train_rows = rows[:n_eval], rows[n_eval:]
     stats["kept"] = len(rows)
+
+    # Privacy screen (PROGRAM.md rule, Duckets 2026-10-22): every row is
+    # screened; hits are scrubbed, hollowed-out rows dropped.
+    priv = {"screened": 0, "scrubbed": 0, "dropped": 0}
+
+    def screen(part):
+        kept = []
+        for r in part:
+            priv["screened"] += 1
+            newrow, n = privacy_screen(r.get("messages", []))
+            r = dict(r)
+            r["messages"] = newrow
+            total = sum(len(str(m.get("content", ""))) for m in newrow)
+            if n and total < 120:
+                priv["dropped"] += 1
+                continue
+            if n:
+                priv["scrubbed"] += 1
+            kept.append(r)
+        return kept
+
+    train_rows = screen(train_rows)
+    eval_rows = screen(eval_rows)
     stats["train"] = len(train_rows)
-    stats["eval"] = n_eval
+    stats["eval"] = len(eval_rows)
+    stats["privacy_screen"] = priv
 
     out = Path(a.outdir)
     out.mkdir(parents=True, exist_ok=True)
