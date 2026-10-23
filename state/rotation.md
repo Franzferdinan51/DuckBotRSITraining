@@ -17,6 +17,8 @@ Read by the rsi-overnight-run driver each night; updated when the night ends.
 
 ## Status
 - No runs yet. No versions yet (all chains at v0/base). No benchmark baselines yet — first benchmark night starts the queue.
+- Fresh challenger: nothing triggered (no chains yet). Triggers per chain: 2 consecutive gate losses / drift ≥ half the drift line / every 4th kept version. Every train set carries a ~10–15% general replay slice (anti-forgetting).
+- Data sources are five families (corpora / experience ledgers / agent skill libraries — Juno's + Hermes', Hermes distills his own on prep nights / HF datasets / teacher-generated).
 - Gemma 4 set: not downloaded (grab list, overnight only, needs Duckets' go).
 - MiniCPM-V 1B MLX copy: ON HAND (mlx-community 4-bit, Duckets swapped it in 2026-10-22). Load proof still pending.
 - Engines: mlx-lm-lora (text) + Unsloth (vision/best-fit) — plan names the engine per run.
