@@ -38,6 +38,7 @@ Gotchas learned the hard way (2026-10-22):
   .venv/              # mlx-lm-lora + MCP server
   tools/              # rsi_mcp.py, curate_dataset.py, backup_dataset.py (from skills/local-rsi-training/tools/)
   failures.jsonl      # the failure ledger (seed from templates/failures-seed.jsonl)
+  successes.jsonl     # the success ledger — verified wins only, proof included (seed from templates/successes-seed.jsonl)
   run-plans/          # working plans (canonical copies live with the driver's program state)
   staging/            # per-run staging (train.jsonl + valid.jsonl staged from a backup)
 <external-drive>/

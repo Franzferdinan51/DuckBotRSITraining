@@ -44,6 +44,7 @@ README.md                     — this file
 docs/
   RSI-PROGRAM.md              — the canonical program: every rule, in full
   AUDIT-2026-10-22.md         — the first full audit: bugs, gaps, drift, fix list
+  AMENDMENTS.md               — program changes made after the audit (experience mining: successes, Hermes, HF datasets)
   RECREATE.md                 — step-by-step runbook to rebuild the system from scratch
   FROZEN-SUITE-SPEC.md        — spec for the frozen regression suite (not yet built)
 skills/
@@ -62,6 +63,7 @@ templates/
   lineage-ledger-template.md  — per-model chain ledger (incl. drift line + frozen scores)
   rotation-template.md        — rotation state file
   failures-seed.jsonl         — the real failure ledger's seed entries (behavioral only)
+  successes-seed.jsonl        — the success ledger's seed entries (verified wins, proof included)
 state/                        — snapshots of the live program state at audit time
   rotation.md
   lineage-ornith-1.5-9b.md
