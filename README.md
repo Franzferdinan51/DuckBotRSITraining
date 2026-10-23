@@ -53,6 +53,7 @@ docs/
   AUDIT-2026-10-22.md         — the first full audit: bugs, gaps, drift, fix list
   AMENDMENTS.md               — program changes made after the audit (benchmarks, challenger, skill data, the 2026-10-22 research pass)
   RECREATE.md                 — step-by-step runbook to rebuild the system from scratch
+  DASHBOARD.md                — the training dashboard spec: panels, kanban, sources, refresh contract (the dashboard itself is a hosted app, not a repo file)
   FROZEN-SUITE-SPEC.md        — spec for the frozen regression suite (not yet built)
 skills/
   local-rsi-training/         — the driver agent's skill + the three driver tools
