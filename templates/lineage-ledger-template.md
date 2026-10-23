@@ -10,6 +10,12 @@ Per docs/RSI-PROGRAM.md: every run on this model starts from the latest verified
 |---|---|---|---|---|---|---|---|---|---|---|
 | base | — | — | — | — | — | baseline: <score> | baseline: <score> | 0 | <base name> | **current** — parent for v1 |
 
+## Benchmarks (battery v1: GPQA Diamond, 198 Q — same harness/settings every run; expansion benchmarks get their own columns when verified)
+
+| Version | GPQA Diamond | Date | Notes |
+|---|---|---|---|
+| base | — | — | baseline queued for the first benchmark night |
+
 ## Notes
 - Smoke runs are recorded here as smoke-only (no version created, no eval claim).
 - Discarded candidates are recorded with the reason (gate loss / frozen regression / verification failure) — they stay in the table so the chain's history is complete.

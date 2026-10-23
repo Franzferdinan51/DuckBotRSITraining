@@ -6,6 +6,11 @@ Per RSI-PROGRAM.md: every run on this model starts from the latest verified vers
 |---|---|---|---|---|---|---|---|
 | base | — (on hand 2026-10-22) | — | — | — | — | ornith-1.5-9b (MLX vision port) | **current** — parent for v1 |
 
+## Benchmarks (battery v1: GPQA Diamond, 198 Q — same harness/settings every run)
+| Version | GPQA Diamond | Date | Notes |
+|---|---|---|---|
+| base | — not yet run — | — | baseline queued for the first benchmark night |
+
 ## Notes
 - Fri 2026-10-23 01:00 ET is the SMOKE night on this model (moved up by Duckets 2026-10-22; one-off cron `rsi-first-run-tonight`) — tiny run, pipeline proof + throughput measurement only; no version is created, no eval claim, no deployment. Sat 2026-10-24 (recurring cron) is the first post-smoke night.
 - First real run is planned (draft) for Tue 2026-10-27: see `run-plans/2026-10-27-ornith-1.5-9b.md`.

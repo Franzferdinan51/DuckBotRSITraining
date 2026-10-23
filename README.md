@@ -26,6 +26,7 @@ Three nights a week (Tue/Thu/Sat, 01:00–10:00 local, only while the owner slee
 - **Anti-lobotomy guard.** Because versions train on top of versions, small general losses compound. Every candidate also takes a **frozen regression suite** (fixed general-capability tests, never trained on, never edited to pass), scored against parent *and* base. Drift vs base is tracked in the ledger and printed in every morning report; crossing a lineage's pre-set drift line stops the chain.
 - **Privacy rule.** No private/personal information is trained on — in any set (train, eval, suite, failure rows). These models and datasets are publishable artifacts; personal data in the weights means a share or upload compromises the owner, and a model can regurgitate memorized personal data. Personal specifics are also noise that hurts general quality. (This repo practices it: no personal information is included anywhere — see the note at the bottom.)
 - **Failure-driven improvement.** A failure ledger records what the fleet actually gets wrong (agent mistakes, model failures, config surprises, the owner's corrections). Entries become held-out eval cases and corrected-behavior training rows; failure categories steer what gets trained next. Actual improvement on everything is the main track; specific domains (e.g. a cannabis/CannaAI track) are rotation slots inside it.
+- **External benchmarks.** Internal evals say whether a version beat its parent on our data; standard benchmarks (battery v1: **GPQA Diamond**) say whether it actually got smarter. They run as preparation on **non-training nights** (Mon/Wed/Fri/Sun) via a dedicated job that never trains and restores the serving state exactly. Every kept version gets a benchmark record in its lineage ledger — and datasets and roster slots alike earn their keep by measured effect: what repeatedly fails to move the numbers gets retired to the archive, never silently reused.
 - **Two engines, per job.** mlx-lm-lora (via its MCP server) drives text training; Unsloth drives vision training and anything it plainly does better. Identical gates on both.
 - **Two agents.** A driver agent owns the schedule and state; a co-agent living on the training Mac holds the same rules, appends failures, and polices out-of-window runs. Neither may start a run outside the program or without the owner's standing authorization; a future **operator model** (a planned track: a model trained on the program itself — run plans, failure ledger, run history — to draft plans and watch logs) proposes but never fires.
 
@@ -58,6 +59,7 @@ skills/
 crons/
   rsi-overnight-run.md        — the recurring Tue/Thu/Sat driver job (full body)
   rsi-first-run-tonight.md    — the one-off smoke-night job (template for first runs)
+  rsi-benchmark-nights.md     — the Mon/Wed/Fri/Sun benchmark job (GPQA battery, never trains)
 templates/
   run-plan-template.md        — what a complete run plan contains
   lineage-ledger-template.md  — per-model chain ledger (incl. drift line + frozen scores)

@@ -12,8 +12,11 @@ Read by the rsi-overnight-run driver each night; updated when the night ends.
 - Then rotate: Ornith 9B (agent work) → MiniCPM-V 4.7 1B (cannabis; MLX copy ON HAND — load proof still pending, prep until proven) → Gemma targets once downloaded → repeat. First real run has a draft plan: `run-plans/2026-10-27-ornith-1.5-9b.md` (decision/judgment job recommended; throughput blank fills from the smoke night).
 - A night with no complete run plan = prep night (curate, back up, mine failures, write the plan).
 
+## Benchmark nights (non-training nights — Mon/Wed/Fri/Sun)
+- Driven by cron `rsi-benchmark-nights` (01:00 ET): baselines + kept-version scores on the battery in PROGRAM.md (v1: GPQA Diamond), results to `hidden_files/benchmarks/` + lineage ledgers. Stands down if a training/smoke job owns the night. Baseline queue: Ornith 1.5 9B base → MiniCPM-V 4.7 1B → Gemma bases when downloaded → any kept version missing a record.
+
 ## Status
-- No runs yet. No versions yet (all chains at v0/base).
+- No runs yet. No versions yet (all chains at v0/base). No benchmark baselines yet — first benchmark night starts the queue.
 - Gemma 4 set: not downloaded (grab list, overnight only, needs Duckets' go).
 - MiniCPM-V 1B MLX copy: ON HAND (mlx-community 4-bit, Duckets swapped it in 2026-10-22). Load proof still pending.
 - Engines: mlx-lm-lora (text) + Unsloth (vision/best-fit) — plan names the engine per run.
