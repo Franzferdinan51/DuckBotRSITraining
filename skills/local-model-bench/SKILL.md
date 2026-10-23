@@ -104,6 +104,23 @@ bench that loads or occupies his models runs inside the night windows
 A daytime battery that ate his model all day was cut by his order;
 do not start one again.
 
+**CADENCE (Duckets, 2026-10-23 18:22): one bench run per NEW MODEL.**
+A model/version is benched once, when it's new, and that pass is its
+record. Bench nights work only models that lack a record (plus
+milestone/challenger FULL runs when pending, and prep) — never
+routine re-benching of models already recorded. Sole exception: the
+battery version changed, invalidating the old record.
+
+**WINNERS-ONLY (Duckets, 2026-10-23 18:23): the record has teeth.**
+"Only winning models get trained on." A version whose bench record
+comes back weaker than its parent's / the chain's others (beyond
+noise — score the parent twice if unsure) is REMOVED: archived per
+the swap rule (never hard-deleted; the base stays), struck as a
+lineage parent, chain head reverts to the last winner. The failure
+is documented (lineage ledger + failures.jsonl) and distilled into
+eval cases + corrected rows — the program learns from it. A removed
+version is never a parent and never quietly retried as-is.
+
 "we gotta leave room to actually use the model between training runs."
 The full battery is a ~20 h two-model marathon — **baseline /
 milestone tier only**: run it ONCE to establish a model's baselines,
