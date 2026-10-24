@@ -72,12 +72,12 @@ normalized to JSONL in `data/` — benchmark items are EVAL-ONLY forever.
 | GPQA Diamond (evidence tier) | `gpqa_diamond_parallel.py` | lmb-repo GPQA | boxed letter |
 | GSM8K (1,319) | `battery_runner.py --bench gsm8k` | gsm8k_test.jsonl | boxed/last number |
 | ARC-Challenge (1,172) | `battery_runner.py --bench arc` | arc_challenge_test.jsonl | boxed letter |
-| MMLU canary (1,026, 57 subjects × 18) | `battery_runner.py --bench mmlu` | mmlu_canary.jsonl | boxed letter |
+| MMLU canary (1,026, 57 subjects × 18) → **MMLU-Redux canary** | `battery_runner.py --bench mmlu` | mmlu_canary.jsonl | boxed letter — **second pass (2026-10-23):** raw MMLU carries 6.49% erroneous labels (57% in analysed virology), so the canary swaps to the re-annotated MMLU-Redux subset; building that subset is a bench-night prep TODO — until it lands, the raw-MMLU canary is a continuity series only, never a drift floor |
 | MATH-500 (500) | `battery_runner.py --bench math` | math500.jsonl | boxed, LaTeX-normalized, 2048 tok cap |
 | HumanEval+ (164) / MBPP+ (378) | `code_gen.py` then `code_grader.py` (VM) | humanevalplus/mbppplus.jsonl | executes tests; bench venv needs numpy + pyarrow |
 | IFEval (541) | `ifeval_gen.py` then `ifeval_grader.py` (VM) | ifeval.jsonl | 25 local instruction checks; strict + per-type; needs langdetect |
 | BFCL v4 simple (400, prompt mode pinned) | `bfcl_runner.py` | bfcl_simple.jsonl | AST match vs acceptable values; JSON-dialect calls accepted (documented leniency) |
-| POPE vision (300 q / 50 imgs) | `vision_runner.py` | pope_subset.jsonl + pope_images/ | yes/no accuracy + yes-rate |
+| POPE vision (300 q / 50 imgs) | `vision_runner.py` | pope_subset.jsonl + pope_images/ | yes/no accuracy + yes-rate — **plus the blind control (second pass, 2026-10-23):** also run image-ablated and report Δ = multimodal − blind beside the score; models beat random by >24pp with no image, so POPE alone can reward language priors while vision erodes. Blind mode in the runner is a bench-night prep TODO |
 | Frozen suite / own eval sets (40) | `score_suite.py` (RSI tools) | suite JSONL {id, category, prompt, scoring, expected} | deterministic scorers + pinned frozen-tier judge for checklist/rubric |
 
 Runner discipline (all runners): resumable JSONL (finished questions are
@@ -133,9 +133,10 @@ battery is now the RELEVANT set only — what his fleet actually does:
 - **frozen regression suite** (his own domains + failure cases — the
   most relevant instrument we own)
 - **IFEval** (instruction following — the agents live on it)
+- **IFBench** (milestone/confirmation addition, second pass 2026-10-23: catches IFEval overfitting — Tulu3 scored IFEval 81.1 vs IFBench 25.2; 58 out-of-domain verifiable constraints, rule-graded, no judge needed. Runner build is a bench-night prep TODO)
 - **BFCL** (tool use — the fleet calls tools constantly)
 - **HumanEval+** (code — vibe-coding + the RSI code track)
-- **MMLU canary** (general breadth; has a published anchor)
+- **MMLU-Redux canary** (general breadth; has a published anchor; raw MMLU is continuity-only — see the battery table)
 - **GSM8K** (basic reasoning sanity)
 - **ARC-C** (kept, Duckets 2026-10-23 ~16:11)
 - **GPQA** (kept — evidence-tier: short-leash absolutes don't mean
@@ -157,6 +158,16 @@ target ≤ ~2 h total at the measured workers-4 pace:
   · POPE 100 (only when the run trained on vision)
 Canaries are smoke signals, not gate evidence — a canary dip routes to
 a bigger run on a bench night; it never discards a candidate by itself.
+
+**Reporting statistics (second pass, 2026-10-23 — PROGRAM.md carries
+the law):** paired comparisons report CLUSTERED standard errors
+(cluster = source template / trajectory / schema — our eval items are
+template-built, so unclustered SEs are optimistic); benchmarks with
+fewer than a few hundred items report Wilson/Beta intervals, not CLT
+intervals (GPQA n=198 = ±4–6pp); every gate report prints its minimum
+detectable effect (~785 paired items for 5pp, ~4,900 for 2pp) and a
+difference smaller than the MDE is reported as "inside noise," never
+as a confirmed gain or loss.
 
 Hard rules: benches run inside the night windows (done by 10:00) or in
 a window Duckets names; a bench never occupies the machine through his
